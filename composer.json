@@ -3,7 +3,7 @@
     "type": "library",
     "description": "Filesystem classes",
     "keywords": ["filesystem"],
-    "homepage": "https://github.com/AzonMedia/exceptions",
+    "homepage": "https://github.com/AzonMedia/filesystem",
     "license": "BSD-3-Clause",
     "authors": [
         {
