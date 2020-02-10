@@ -16,11 +16,12 @@
     "require": {
         "php": ">=7.2.0",
         "azonmedia/packages": "dev-master",
-        "azonmedia/components": "dev-master"
+        "azonmedia/components": "dev-master",
+        "azonmedia/exceptions": "dev-master"
     },
     "autoload": {
         "psr-4": {
-            "Azonmedia\\Exceptions\\": "src/"
+            "Azonmedia\\File\\": "src/"
         }
     }
 }
