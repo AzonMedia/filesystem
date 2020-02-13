@@ -1,0 +1,15 @@
+{
+    "package": "azonmedia/filesystem",
+    "source_language": "en",
+    "translations": [
+        {
+            "en": "The file/dir %s does not exist.",
+            "bg": "Файлът/директорията %s не съществува."
+        },
+        {
+            "en": "The file/dir %s is not readable.",
+            "bg": "Файлът/директорията %s не може да бъде прочетен."
+        }
+    ]
+
+}

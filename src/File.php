@@ -39,7 +39,7 @@ class File
             throw new RecordNotFoundException(sprintf('The file/dir %s does not exist.', $relative_path));
         }
         if (!is_readable($real_absolute_path)) {
-            throw new PermissionDeniedException(sprintf('The file/dir %s is not readable.', $relative_path));
+            throw new PermissionDeniedException(sprintf('The file/dir %s is not readable. Please check the filesystem permissions', $relative_path), 0, NULL, 'ad0a5c3a-e064-4be1-a523-4fe166b0a40c');
         }
         $this->relative_path = $relative_path;
         $this->absolute_path = $real_absolute_path;
