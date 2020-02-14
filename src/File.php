@@ -9,6 +9,7 @@ use Azonmedia\Exceptions\PermissionDeniedException;
 use Azonmedia\Exceptions\InvalidArgumentException;
 use Azonmedia\Exceptions\RunTimeException;
 use Azonmedia\Exceptions\RecordNotFoundException;
+use Azonmedia\Translator\Translator as t;
 
 /**
  * Class File
@@ -23,23 +24,22 @@ class File
 
     private string $relative_path;
 
-    private static $absolute_store_path;
+    private static ?string $absolute_store_path = NULL;
 
     /**
      * @param string $relative_path
      */
     public function __construct(string $relative_path)
     {
-
-        $real_store_base_path = self::get_absolute_store_path();
-        $relative_path = self::validate_relative_path($relative_path);
+        $real_store_base_path = static::get_absolute_store_path();
+        $relative_path = static::validate_relative_path($relative_path);
         $absolute_path = $real_store_base_path.'/'.$relative_path;
         $real_absolute_path = realpath($absolute_path);
         if (!$real_absolute_path || !file_exists($real_absolute_path)) {
-            throw new RecordNotFoundException(sprintf('The file/dir %s does not exist.', $relative_path));
+            throw new RecordNotFoundException(sprintf(t::_('The file/dir %s does not exist.'), $relative_path));
         }
         if (!is_readable($real_absolute_path)) {
-            throw new PermissionDeniedException(sprintf('The file/dir %s is not readable. Please check the filesystem permissions', $relative_path), 0, NULL, 'ad0a5c3a-e064-4be1-a523-4fe166b0a40c');
+            throw new PermissionDeniedException(sprintf(t::_('The file/dir %s is not readable. Please check the filesystem permissions'), $relative_path), 0, NULL, 'ad0a5c3a-e064-4be1-a523-4fe166b0a40c');
         }
         $this->relative_path = $relative_path;
         $this->absolute_path = $real_absolute_path;
@@ -62,12 +62,12 @@ class File
 
     public function move(string $to_relative_path) : void
     {
-        $real_store_base_path = self::get_absolute_store_path();
-        $to_relative_path = self::validate_relative_path($to_relative_path);
+        $real_store_base_path = static::get_absolute_store_path();
+        $to_relative_path = static::validate_relative_path($to_relative_path);
         $absolute_to_path = $real_store_base_path.$to_relative_path;
         $real_absolute_to_path = realpath($absolute_to_path);
         if (!rename($this->absolute_path, $real_absolute_to_path)) {
-            throw new RunTimeException(sprintf('Moving file %s to %s failed.', $this->relative_path, $to_relative_path));
+            throw new RunTimeException(sprintf(t::_('Moving file %s to %s failed.'), $this->relative_path, $to_relative_path));
         }
         $this->absolute_path = $real_absolute_to_path;
         $this->relative_path = $to_relative_path;
@@ -112,14 +112,14 @@ class File
     public function get_extension() : string
     {
         if ($this->is_dir()) {
-            throw new RunTimeException(sprintf('Can not obtain extension on directory %s.', $this->relative_path));
+            throw new RunTimeException(sprintf(t::_('Can not obtain extension on directory %s.'), $this->relative_path));
         }
     }
 
     public function get_mime_type() : string
     {
         if ($this->is_dir()) {
-            throw new RunTimeException(sprintf('Can not obtain mime type on directory %s.', $this->relative_path));
+            throw new RunTimeException(sprintf(t::_('Can not obtain mime type on directory %s.'), $this->relative_path));
         }
         return mime_content_type($this->absolute_path);
     }
@@ -140,10 +140,10 @@ class File
             if (is_link($this->absolute_path.'/'.$path)) {
                 continue;
             }
-            $ret[] = new self($this->relative_path.'/'.$path);
+            $ret[] = new static($this->relative_path.'/'.$path);
         }
         return $ret;
-        //return array_map( fn(string $path) : self => new self($path) , scandir($this->absolute_path) );
+        //return array_map( fn(string $path) : self => new static($path) , scandir($this->absolute_path) );
     }
 
     /**
@@ -177,20 +177,20 @@ class File
     {
         self::create_process($relative_path, function() use ($relative_path, $content) {
             if (mkdir($real_absolute_path) === FALSE) {
-                throw new RunTimeException(sprintf('The creation of directory %s failed.', $relative_path));
+                throw new RunTimeException(sprintf(t::_('The creation of directory %s failed.'), $relative_path));
             }
         });
-        return new self($relative_path);
+        return new static($relative_path);
     }
 
     public static function create_file(string $relative_path, string $content) : self
     {
         self::create_process($relative_path, function() use ($relative_path, $content) {
             if (file_put_contents($real_absolute_path, $content) === FALSE) {
-                throw new RunTimeException(sprintf('The creation of file %s failed.', $relative_path));
+                throw new RunTimeException(sprintf(t::_('The creation of file %s failed.'), $relative_path));
             }
         });
-        return new self($relative_path);
+        return new static($relative_path);
     }
 
     private static function create_process(string $relative_path, callable $Callback) : void
@@ -201,9 +201,9 @@ class File
         $real_absolute_path = realpath($absolute_path);
         if (file_exists($real_absolute_path)) {
             if (is_dir($real_absolute_path)) {
-                throw new RunTimeException(sprintf('There is already a directory %s.', $relative_path));
+                throw new RunTimeException(sprintf(t::_('There is already a directory %s.'), $relative_path));
             } else {
-                throw new RunTimeException(sprintf('There is already a file %s.', $relative_path));
+                throw new RunTimeException(sprintf(t::_('There is already a file %s.'), $relative_path));
             }
         }
         $Callback();
@@ -221,10 +221,10 @@ class File
     public static function get_by_absolute_path(string $absolute_path) : self
     {
 
-        $real_store_base_path = self::get_absolute_store_path();
+        $real_store_base_path = static::get_absolute_store_path();
         //lets find out is the requested file from private assets (./app/assets) or public assets (./app/public/assets)
         $relative_path = str_replace($real_store_base_path, '', $absolute_path);
-        return new self($relative_path);
+        return new static($relative_path);
     }
 
     /**
@@ -235,12 +235,12 @@ class File
      */
     public static function validate_relative_path(string $relative_path) : string
     {
-        $real_store_base_path = self::get_absolute_store_path();
+        $real_store_base_path = static::get_absolute_store_path();
         if (!$relative_path) {
-            throw new InvalidArgumentException(sprintf('There is no path provided.'));
+            throw new InvalidArgumentException(sprintf(t::_('There is no path provided.')));
         }
         if ($relative_path[0] === '/') {
-            throw new InvalidArgumentException(sprintf('The provided path %s is absolute. Relative path (to store base %s) is expected.', $relative_path, $real_store_base_path ));
+            throw new InvalidArgumentException(sprintf(t::_('The provided path %s is absolute. Relative path (to store base %s) is expected.'), $relative_path, $real_store_base_path ));
         }
 //        if ($relative_path === './') {
 //            throw new InvalidArgumentException(sprintf('The provided path %s is invalid.', $relative_path));
@@ -254,13 +254,16 @@ class File
     public static function set_absolute_store_path(string $absolute_path) : void
     {
         if ($absolute_path[0] !== '/') {
-            throw new InvalidArgumentException(sprintf('The provided path %s is not absolute.', $absolute_path));
+            throw new InvalidArgumentException(sprintf(t::_('The provided path %s is not absolute.'), $absolute_path));
         }
         self::$absolute_store_path = $absolute_path;
     }
 
     public static function get_absolute_store_path() : string
     {
+        if (self::$absolute_store_path === NULL) {
+            throw new RunTimeException(sprintf(t::_('The absolute store path is not set. Please set it with File::set_absolute_store_path().')));
+        }
         return self::$absolute_store_path;
     }
 
