@@ -10,6 +10,7 @@ use Azonmedia\Exceptions\InvalidArgumentException;
 use Azonmedia\Exceptions\RunTimeException;
 use Azonmedia\Exceptions\RecordNotFoundException;
 use Azonmedia\Translator\Translator as t;
+use Psr\Http\Message\UploadedFileInterface;
 
 /**
  * Class File
@@ -193,6 +194,34 @@ class File
         return new static($relative_path);
     }
 
+    /**
+     * @param string $relative_path The path where the file should be placed
+     * @param UploadedFileInterface $UploadedFile
+     * @return static
+     */
+    public static function upload_file(string $relative_path, UploadedFileInterface $UploadedFile) : self
+    {
+
+        $target_path = static::get_absolute_store_path().'/'.$relative_path.'/'.$UploadedFile->getClientFilename();
+        $target_dir = dirname($target_path);
+        $relative_target_path = str_replace(static::get_absolute_store_path().'/', '', $target_path);
+        $relative_target_dir = str_replace(static::get_absolute_store_path().'/', '', $target_dir);
+        if (!file_exists($target_dir)) {
+            throw new InvalidArgumentException(sprintf(t::_('The target directory %1s does not exist.'), $relative_target_dir));
+        }
+        if (!is_dir($target_dir)) {
+            throw new InvalidArgumentException(sprintf(t::_('The target directory %1s is a file.'), $relative_target_dir));
+        }
+        if (!is_writeable($target_dir)) {
+            throw new InvalidArgumentException(sprintf(t::_('The target directory %1s is not writeable.'), $relative_target_dir));
+        }
+        if (file_exists($target_path)) {
+            throw new InvalidArgumentException(sprintf(t::_('The file %1s already exists.'), $relative_target_path));
+        }
+        $UploadedFile->moveTo($target_path);
+        return new static($relative_target_path);
+    }
+
     private static function create_process(string $relative_path, callable $Callback) : void
     {
         $real_store_base_path = self::get_absolute_store_path();
@@ -213,7 +242,6 @@ class File
 
     /**
      * Returns a file based on the provided path.
-     * The provided path is relative to the
      * @param string $base_path The base path of the store
      * @param string $absolute_path
      * @return static
@@ -251,14 +279,29 @@ class File
         return $relative_path;
     }
 
+    /**
+     * The provided path must be absolute.
+     * If it has a trailing / it will be removed.
+     * @param string $absolute_path
+     * @throws InvalidArgumentException
+     */
     public static function set_absolute_store_path(string $absolute_path) : void
     {
         if ($absolute_path[0] !== '/') {
             throw new InvalidArgumentException(sprintf(t::_('The provided path %s is not absolute.'), $absolute_path));
         }
+        if ($absolute_path[-1] === '/') {
+            $absolute_path = substr($absolute_path, 0, strlen($absolute_path) - 1);
+        }
         self::$absolute_store_path = $absolute_path;
     }
 
+    /**
+     * The returned path does not have a trailing /
+     * @return string
+     * @throws InvalidArgumentException
+     * @throws RunTimeException
+     */
     public static function get_absolute_store_path() : string
     {
         if (self::$absolute_store_path === NULL) {
