@@ -407,15 +407,16 @@ class File
         if (!$relative_path) {
             throw new InvalidArgumentException(sprintf(t::_('There is no relative path provided.')));
         }
+        if (strpos($relative_path, '..') !== FALSE) {
+            throw new InvalidArgumentException(sprintf(t::_('The provided relative path %1s contains "..". This is not allowed.'), $relative_path));
+        }
         if ($relative_path[0] === '/') {
             throw new InvalidArgumentException(sprintf(t::_('The provided path %1s is absolute. Relative path (to store base %2s) is expected.'), $relative_path, $real_store_base_path ));
         }
         if ($relative_path[-1] === '/' && $relative_path !== './') {
             throw new InvalidArgumentException(sprintf(t::_('The provided relative path %1s ends with "/". The provided path must not have trailing /.'), $relative_path ));
         }
-        if (strpos($relative_path, '..') !== FALSE) {
-            throw new InvalidArgumentException(sprintf(t::_('The provided relative path %1s contains "..". This is not allowed.'), $relative_path));
-        }
+
         if (!ctype_print($relative_path)) {
             throw new InvalidArgumentException(sprintf(t::_('The provided relative path %1s contains non printable characters. This is not allowed.'), $relative_path));
         }
