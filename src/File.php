@@ -12,14 +12,54 @@ use Azonmedia\Exceptions\RecordNotFoundException;
 use Azonmedia\Translator\Translator as t;
 use Psr\Http\Message\UploadedFileInterface;
 
+//TODO update to extend SplFileObject
+
 /**
  * Class File
  * @package GuzabaPlatform\Assets\Models
  *
- * This class represents a File under the store_
+ * @property file_name
+ * @property file_relative_name
+ * @property file_absolute_name
+ * @property file_ctime
+ * @property file_atime
+ * @property file_mtime
+ * @property file_dir
+ * @property file_is_dir
+ * @property file_is_deleted
+ * @property file_type
+ * @property file_mime_type
+ * @property file_extension
+ * @property file_contents
+ * @property file_size
+ * @property file_permissions
+ * @property file_group
+ * @property file_owner
+ * @property file_inode
  */
 class File
 {
+
+    protected const PROPERTIES_GET_METHODS_MAP = [
+        'file_name'             => 'get_name',
+        'file_relative_name'    => 'get_relative_path',
+        'file_absolute_name'    => 'get_absolute_path',
+        'file_ctime'            => 'get_ctime',
+        'file_atime'            => 'get_atime',
+        'file_mtime'            => 'get_mtime',
+        'file_dir'              => 'get_dir',
+        'file_is_dir'           => 'is_dir',
+        'file_is_deleted'       => 'is_deleted',
+        'file_type'             => 'get_type',
+        'file_mime_type'        => 'get_mime_type',
+        'file_extension'        => 'get_extension',
+        'file_contents'         => 'get_contents',
+        'file_size'             => 'get_size',
+        'file_permissions'      => 'get_permissions',
+        'file_group'            => 'get_group',
+        'file_owner'            => 'get_owner',
+        'file_inode'            => 'get_inode',
+    ];
 
     /**
      * @var string|null
@@ -58,6 +98,25 @@ class File
     public function __toString() : string
     {
         return $this->get_name();
+    }
+
+    /**
+     * @param string $property
+     * @return mixed
+     * @throws InvalidArgumentException
+     * @throws RunTimeException
+     */
+    public function __get(string $property) /* mixed */
+    {
+        if (!isset(self::PROPERTIES_GET_METHODS_MAP[$property])) {
+            throw new RunTimeException(sprintf(t::_('The class %1s does not have a property %2s.'), get_class($this), $property));
+        }
+        return $this->{self::PROPERTIES_GET_METHODS_MAP[$property]}();
+    }
+
+    public function get_property_names() : array
+    {
+        return array_keys(self::PROPERTIES_GET_METHODS_MAP);
     }
 
     /**
@@ -183,6 +242,7 @@ class File
         if ($this->is_dir()) {
             throw new RunTimeException(sprintf(t::_('Can not obtain extension on directory %1s.'), $this->relative_path));
         }
+        return pathinfo($this->absolute_path, PATHINFO_EXTENSION)['extension'] ?? '';
     }
 
     public function get_mime_type() : string
@@ -221,7 +281,7 @@ class File
      */
     public function get_parent() : ?self
     {
-
+        //TODO implement...
     }
 
     /**
