@@ -109,7 +109,7 @@ class File
     public function __get(string $property) /* mixed */
     {
         if (!isset(self::PROPERTIES_GET_METHODS_MAP[$property])) {
-            throw new RunTimeException(sprintf(t::_('The class %1s does not have a property %2s.'), get_class($this), $property));
+            throw new RunTimeException(sprintf(t::_('The class %1$s does not have a property %2$s.'), get_class($this), $property));
         }
         return $this->{self::PROPERTIES_GET_METHODS_MAP[$property]}();
     }
@@ -129,7 +129,7 @@ class File
         } elseif ($this->is_dir()) {
             rmdir($this->absolute_path);
         } else {
-            throw new RunTimeException(sprintf(t::_('The filesystem object %1s is neither a file or a directory.'), $this->get_relative_path() ));
+            throw new RunTimeException(sprintf(t::_('The filesystem object %1$s is neither a file or a directory.'), $this->get_relative_path() ));
         }
 
         $this->absolute_path = '';
@@ -240,7 +240,7 @@ class File
     public function get_extension() : string
     {
         if ($this->is_dir()) {
-            throw new RunTimeException(sprintf(t::_('Can not obtain extension on directory %1s.'), $this->relative_path));
+            throw new RunTimeException(sprintf(t::_('Can not obtain extension on directory %1$s.'), $this->relative_path));
         }
         return pathinfo($this->absolute_path, PATHINFO_EXTENSION)['extension'] ?? '';
     }
@@ -248,7 +248,7 @@ class File
     public function get_mime_type() : string
     {
 //        if ($this->is_dir()) {
-//            throw new RunTimeException(sprintf(t::_('Can not obtain mime type on directory %1s.'), $this->relative_path));
+//            throw new RunTimeException(sprintf(t::_('Can not obtain mime type on directory %1$s.'), $this->relative_path));
 //        }
         return $this->is_file() ? mime_content_type($this->absolute_path) : 'application/x-directory';
     }
@@ -309,10 +309,10 @@ class File
 //            throw new InvalidArgumentException(sprintf(t::_('There is no $new_directory_name provided.')));
 //        }
 //        if (strpos($new_directory_name, '/') !== FALSE) {
-//            throw new InvalidArgumentException(sprintf(t::_('The $new_directory_name %1s contains "/". This is an invalid name.')));
+//            throw new InvalidArgumentException(sprintf(t::_('The $new_directory_name %1$s contains "/". This is an invalid name.')));
 //        }
 //        if (strpos($new_directory_name, '..') !== FALSE) {
-//            throw new InvalidArgumentException(sprintf(t::_('The $new_directory_name %1s contains "..". This is an invalid name.')));
+//            throw new InvalidArgumentException(sprintf(t::_('The $new_directory_name %1$s contains "..". This is an invalid name.')));
 //        }
         self::validate_file_name($new_directory_name);
         $dir_absolute_path = self::create_process($relative_path, function(string $real_absolute_path) use ($new_directory_name) : string
@@ -365,16 +365,16 @@ class File
         //$relative_target_path = str_replace(static::get_absolute_store_path().'/', '', $target_path);
         //$relative_target_dir = str_replace(static::get_absolute_store_path().'/', '', $target_dir);
 //        if (!file_exists($target_dir)) {
-//            throw new InvalidArgumentException(sprintf(t::_('The target directory %1s does not exist.'), $relative_target_dir));
+//            throw new InvalidArgumentException(sprintf(t::_('The target directory %1$s does not exist.'), $relative_target_dir));
 //        }
 //        if (!is_dir($target_dir)) {
-//            throw new InvalidArgumentException(sprintf(t::_('The target directory %1s is a file.'), $relative_target_dir));
+//            throw new InvalidArgumentException(sprintf(t::_('The target directory %1$s is a file.'), $relative_target_dir));
 //        }
 //        if (!is_writeable($target_dir)) {
-//            throw new InvalidArgumentException(sprintf(t::_('The target directory %1s is not writeable.'), $relative_target_dir));
+//            throw new InvalidArgumentException(sprintf(t::_('The target directory %1$s is not writeable.'), $relative_target_dir));
 //        }
 //        if (file_exists($target_path)) {
-//            throw new InvalidArgumentException(sprintf(t::_('The file %1s already exists.'), $relative_target_path));
+//            throw new InvalidArgumentException(sprintf(t::_('The file %1$s already exists.'), $relative_target_path));
 //        }
         self::validate_file_name($UploadedFile->getClientFilename());
         //$UploadedFile->moveTo($target_path);
@@ -398,13 +398,13 @@ class File
             throw new InvalidArgumentException(sprintf(t::_('No file/dir name provided.')));
         }
         if (strpos($file_name,'/') !== FALSE) {
-            throw new InvalidArgumentException(sprintf(t::_('The file/dir name %1s contains "/". This is not a valid name.'), $file_name ));
+            throw new InvalidArgumentException(sprintf(t::_('The file/dir name %1$s contains "/". This is not a valid name.'), $file_name ));
         }
         if (strpos($file_name,'..') !== FALSE) {
-            throw new InvalidArgumentException(sprintf(t::_('The file/dir name %1s contains "..". This is not a valid name.'), $file_name ));
+            throw new InvalidArgumentException(sprintf(t::_('The file/dir name %1$s contains "..". This is not a valid name.'), $file_name ));
         }
         if (!ctype_print($file_name)) {
-            throw new InvalidArgumentException(sprintf(t::_('The file/dir name %1s contains non printable characters. This is not a valid name.'), $file_name ));
+            throw new InvalidArgumentException(sprintf(t::_('The file/dir name %1$s contains non printable characters. This is not a valid name.'), $file_name ));
         }
     }
 
@@ -468,17 +468,17 @@ class File
             throw new InvalidArgumentException(sprintf(t::_('There is no relative path provided.')));
         }
         if (strpos($relative_path, '..') !== FALSE) {
-            throw new InvalidArgumentException(sprintf(t::_('The provided relative path %1s contains "..". This is not allowed.'), $relative_path));
+            throw new InvalidArgumentException(sprintf(t::_('The provided relative path %1$s contains "..". This is not allowed.'), $relative_path));
         }
         if ($relative_path[0] === '/') {
-            throw new InvalidArgumentException(sprintf(t::_('The provided path %1s is absolute. Relative path (to store base %2s) is expected.'), $relative_path, $real_store_base_path ));
+            throw new InvalidArgumentException(sprintf(t::_('The provided path %1$s is absolute. Relative path (to store base %2$s) is expected.'), $relative_path, $real_store_base_path ));
         }
         if ($relative_path[-1] === '/' && $relative_path !== './') {
-            throw new InvalidArgumentException(sprintf(t::_('The provided relative path %1s ends with "/". The provided path must not have trailing /.'), $relative_path ));
+            throw new InvalidArgumentException(sprintf(t::_('The provided relative path %1$s ends with "/". The provided path must not have trailing /.'), $relative_path ));
         }
 
         if (!ctype_print($relative_path)) {
-            throw new InvalidArgumentException(sprintf(t::_('The provided relative path %1s contains non printable characters. This is not allowed.'), $relative_path));
+            throw new InvalidArgumentException(sprintf(t::_('The provided relative path %1$s contains non printable characters. This is not allowed.'), $relative_path));
         }
 //        if ($relative_path === './') {
 //            throw new InvalidArgumentException(sprintf('The provided path %s is invalid.', $relative_path));
