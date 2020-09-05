@@ -380,13 +380,14 @@ class File
         //$UploadedFile->moveTo($target_path);
         $file_absolute_path = self::create_process($relative_path, function(string $real_absolute_path) use ($UploadedFile) : string
         {
-            $target_path = $real_absolute_path.'/'.$UploadedFile->getClientFilename();
-            $UploadedFile->moveTo($target_path);
-            $file_absolute_path = $real_absolute_path.'/'.$new_file_name;
+            $file_absolute_path = $real_absolute_path.'/'.$UploadedFile->getClientFilename();
             self::check_file_does_not_exist($file_absolute_path);
-            if (file_put_contents($file_absolute_path, $content) === FALSE) {
-                throw new RunTimeException(sprintf(t::_('The creation of file %s failed.'), $file_absolute_path));
-            }
+            $UploadedFile->moveTo($file_absolute_path);
+            //$file_absolute_path = $real_absolute_path.'/'.$UploadedFile->getClientFilename();
+//            self::check_file_does_not_exist($file_absolute_path);
+//            if (file_put_contents($file_absolute_path, $content) === FALSE) {
+//                throw new RunTimeException(sprintf(t::_('The creation of file %s failed.'), $file_absolute_path));
+//            }
             return $file_absolute_path;
         });
         return self::get_by_absolute_path($file_absolute_path);
