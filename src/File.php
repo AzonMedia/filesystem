@@ -336,7 +336,7 @@ class File
      * @throws RecordNotFoundException
      * @throws RunTimeException
      */
-    public static function create_file(string $relative_path, string $new_file_name, string $content) : self
+    public static function create_file(string $relative_path, string $new_file_name, string $content): self
     {
         $relative_path = self::validate_relative_path($relative_path);
         self::validate_file_name($new_file_name);
@@ -357,7 +357,7 @@ class File
      * @param UploadedFileInterface $UploadedFile
      * @return static
      */
-    public static function upload_file(string $relative_path, UploadedFileInterface $UploadedFile) : self
+    public static function upload_file(string $relative_path, UploadedFileInterface $UploadedFile): self
     {
         $relative_path = self::validate_relative_path($relative_path);
         //$target_path = static::get_absolute_store_path().'/'.$relative_path.'/'.$UploadedFile->getClientFilename();
@@ -393,6 +393,37 @@ class File
         return self::get_by_absolute_path($file_absolute_path);
     }
 
+    /**
+     * Creates a local file by downloading it from remote URL.
+     * Preserved the remote filename.
+     * @param string $relative_path Relative path to self::get_absolute_store_path() where the new file should be stored
+     * @param string $remote_url
+     * @return File
+     * @throws InvalidArgumentException
+     * @throws RunTimeException
+     */
+    public static function download_file(string $relative_path, string $remote_url): self
+    {
+        $relative_path = self::validate_relative_path($relative_path);
+        if (!parse_url($remote_url, PHP_URL_SCHEME)) {
+            throw new InvalidArgumentException(sprintf(t::_('The provided url %1$s is not a valid one (it is missing the scheme).'), $remote_url));
+        }
+        $new_file_name = substr($remote_url, strrpos($remote_url, '/') + 1);
+        self::validate_file_name($new_file_name);
+        $file_absolute_path = self::create_process($relative_path, function(string $real_absolute_path) use ($remote_url, $new_file_name) : string
+        {
+            $file_absolute_path = $real_absolute_path.'/'.$new_file_name;
+            self::check_file_does_not_exist($file_absolute_path);
+            file_put_contents($file_absolute_path, file_get_contents($remote_url));
+            return $file_absolute_path;
+        });
+        return self::get_by_absolute_path($file_absolute_path);
+    }
+
+    /**
+     * @param string $file_name
+     * @throws InvalidArgumentException
+     */
     private static function validate_file_name(string $file_name) : void
     {
         if (!$file_name) {
