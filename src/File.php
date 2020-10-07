@@ -140,8 +140,9 @@ class File
     {
         $real_store_base_path = static::get_absolute_store_path();
         $to_relative_path = static::validate_relative_path($to_relative_path);
-        $absolute_to_path = $real_store_base_path.$to_relative_path;
-        $real_absolute_to_path = realpath($absolute_to_path);
+        $absolute_to_path = $real_store_base_path.'/'.$to_relative_path;
+        //$real_absolute_to_path = realpath($absolute_to_path);//the destination is not expected to exist
+        $real_absolute_to_path = $absolute_to_path;
         if (!rename($this->absolute_path, $real_absolute_to_path)) {
             throw new RunTimeException(sprintf(t::_('Moving file %s to %s failed.'), $this->relative_path, $to_relative_path));
         }
@@ -319,7 +320,7 @@ class File
         {
             $dir_absolute_path = $real_absolute_path.'/'.$new_directory_name;
             self::check_file_does_not_exist($dir_absolute_path);
-            if (mkdir($dir_absolute_path) === FALSE) {
+            if (mkdir($dir_absolute_path, 0777, true) === FALSE) {
                 throw new RunTimeException(sprintf(t::_('The creation of directory %s failed.'), $dir_absolute_path));
             }
             return $dir_absolute_path;
@@ -453,7 +454,13 @@ class File
         $real_store_base_path = static::get_absolute_store_path();
         $relative_path = self::validate_relative_path($relative_path);
         $absolute_path = $real_store_base_path.'/'.$relative_path;
+        if (!file_exists($absolute_path)) {
+            mkdir($absolute_path, 0777, true);
+        }
         $real_absolute_path = realpath($absolute_path);
+        if ($real_absolute_path === false) {
+            throw new RunTimeException(sprintf(t::_('The relative path %1$s which is equivalent to %2$s does not exist.'), $relative_path, $absolute_path));
+        }
         return $Callback($real_absolute_path);
     }
 
